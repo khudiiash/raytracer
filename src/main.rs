@@ -1,17 +1,15 @@
 use std::{fs::File, io::{self, BufWriter, Write}};
 use indicatif::{ProgressBar, ProgressStyle};
-mod common;
-mod vec3;
-mod color;
-mod hittable;
-mod hittable_list;
-mod ray;
-mod sdf;
-use crate::hittable_list::*;
 
-use crate::vec3::{Point3, Vec3};
-use crate::ray::Ray;
-use crate::color::{WritableColor};
+mod utils;
+mod math;
+mod core;
+mod sdf;
+
+use crate::core::hittable_list::*;
+use crate::math::vec3::{Point3, Vec3};
+use crate::math::ray::Ray;
+use crate::math::color::WritableColor;
 use crate::sdf::sphere::Sphere;
 
 // Image
@@ -29,12 +27,9 @@ static CAMERA_CENTER: Point3 = Point3 { e: [0.0, 0.0, 0.0] };
 // Output
 const OUTPUT_FILE: &str = "output.ppm";
 
-
 fn main() -> io::Result<()> {
-
     let focal_length: f64 = 1.0;
-    let camera_center = vec3::Point3::new(0.0, 0.0, 0.0);
-
+    let camera_center = math::vec3::Point3::new(0.0, 0.0, 0.0);
 
     // Calculate the vectors across the horizontal and vertical viewport edges
     let viewport_u = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);

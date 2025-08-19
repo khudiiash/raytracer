@@ -1,6 +1,8 @@
-use crate::common::*;
-use crate::hittable::{HitRecord, Hittable};
-use crate::hittable_list::HittableList;
+use crate::utils::common::*;
+use crate::core::hittable::{HitRecord, Hittable};
+use crate::core::hittable_list::HittableList;
+use crate::math::vec3::{Point3, Vec3};
+use crate::math::color::Color;
 
 pub struct Ray {
     pub origin: Point3,

@@ -1,6 +1,6 @@
-use crate::hittable::{Hittable, HitRecord};
-use crate::vec3::{Point3, Vec3};
-use crate::ray::Ray;
+use crate::core::hittable::{Hittable, HitRecord};
+use crate::math::vec3::{Point3, Vec3};
+use crate::math::ray::Ray;
 
 pub struct Sphere {
     pub center: Point3,
