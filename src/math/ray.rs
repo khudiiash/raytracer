@@ -1,3 +1,4 @@
+use crate::math::interval::Interval;
 use crate::utils::common::*;
 use crate::core::hittable::{HitRecord, Hittable};
 use crate::core::hittable_list::HittableList;
@@ -34,7 +35,7 @@ impl Ray {
 
     pub fn color(&self, world: &HittableList) -> Color {
         let mut rec = HitRecord::default();
-        if world.hit(self, 0.0, INFINITY, &mut rec) {
+        if world.hit(self, &Interval::new(0.0, INFINITY), &mut rec) {
             return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
         }
         // Sky gradient
