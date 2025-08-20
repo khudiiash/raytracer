@@ -1,86 +1,84 @@
-use std::{fs::File, io::{self, BufWriter, Write}};
-use indicatif::{ProgressBar, ProgressStyle};
 
 mod utils;
 mod math;
 mod core;
+mod materials;
 mod sdf;
 
-use crate::core::hittable_list::*;
+use std::fs::File;
+use std::io::BufWriter;
+use std::sync::Arc;
+
+use crate::core::material::Material;
+use crate::core::{camera::Camera, hittable_list::*};
+use crate::materials::dielectric::Dielectric;
+use crate::materials::lambertian::Lambertian;
+use crate::materials::metal::Metal;
+use crate::math::color::Color;
 use crate::math::vec3::{Point3, Vec3};
-use crate::math::ray::Ray;
-use crate::math::color::WritableColor;
-use crate::sdf::sphere::Sphere;
+use crate::sdf::Sphere;
 
-// Image
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: u32 = 1028;
-const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
-const MAX_COLOR: u8 = 255;
-
-// Camera
-const VIEWPORT_HEIGHT: f64 = 2.0;
-const VIEWPORT_WIDTH: f64 = VIEWPORT_HEIGHT * (IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64);
-const FOCAL_LENGTH: f64 = 1.0;
-static CAMERA_CENTER: Point3 = Point3 { e: [0.0, 0.0, 0.0] };
-
-// Output
 const OUTPUT_FILE: &str = "output.ppm";
 
-fn main() -> io::Result<()> {
-    let focal_length: f64 = 1.0;
-    let camera_center = math::vec3::Point3::new(0.0, 0.0, 0.0);
+fn main() {
+    let mut camera = Camera::new();
+    camera.aspect_ratio = 16.0 / 9.0;
+    camera.image_width = 1200;
+    camera.samples_per_pixel = 512;
+    camera.max_depth = 50;
+    camera.defocus_angle = 0.6;
+    camera.focus_distance = 10.0;
+    camera.vfov = 20.0;
+    camera.eye = Vec3::new(13.0, 2.0, 3.0);
+    camera.look_at = Vec3::new(0.0, 0.0, 0.0);
 
-    // Calculate the vectors across the horizontal and vertical viewport edges
-    let viewport_u = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-    let viewport_v = Vec3::new(0.0, -VIEWPORT_HEIGHT, 0.0);
-    let lower_left_corner = camera_center - viewport_u/2.0 - viewport_v/2.0 - Vec3::new(0.0, 0.0, focal_length);
-
-    // Calculate the horizontal and vertical delta vectors from pixel to pixel
-    let pixel_delta_u = viewport_u / IMAGE_WIDTH as f64;
-    let pixel_delta_v = viewport_v / IMAGE_HEIGHT as f64;
-
-    // Calculate the location of the upper left pixel
-    let viewport_upper_left = camera_center - Vec3::new(0.0, 0.0, focal_length) - viewport_u/2.0 - viewport_v/2.0;
-    let pixel00_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
-
-    // World
     let mut world = HittableList::new();
-    let sphere = Sphere::new(
-        Point3 { e: [0.0, 0.0, -1.0] },
-        0.5
-    );
-    let sphere2 = Sphere::new(
-        Point3 { e: [0.0, -100.5, 1.0] },
-        100.0
-    );
-    world.add(Box::new(sphere));
-    world.add(Box::new(sphere2));
 
-    // Output file
-    let file = File::create(OUTPUT_FILE)?;
-    let mut writer = BufWriter::new(file);
-    let pb = ProgressBar::new((IMAGE_WIDTH * IMAGE_HEIGHT).into());
-    pb.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {percent}%").unwrap());
+    // Ground
+    let ground_material = Arc::new(Lambertian { albedo: Color::new(0.5, 0.5, 0.5) });
+    let ground = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_material.clone());
+    world.add(Box::new(ground));
 
-    // Header
-    writeln!(writer, "P3\n{} {}\n{}", IMAGE_WIDTH, IMAGE_HEIGHT, MAX_COLOR)?;
-
-    // Render
-    for j in 0..IMAGE_HEIGHT {
-        for i in 0..IMAGE_WIDTH {
-            pb.inc(1);
-            let pixel_center = pixel00_loc + (i as f64 * pixel_delta_u + j as f64 * pixel_delta_v);
-            let ray_direction = pixel_center - CAMERA_CENTER;
-            let ray = Ray {
-                origin: CAMERA_CENTER,
-                direction: ray_direction,
-            };
-
-            let color = ray.color(&world);
-            color.write_color(&mut writer).unwrap();
+    // // Random small spheres
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = utils::common::random();
+            let center = Point3::new(
+                a as f64 + 0.9 * utils::common::random(),
+                0.2,
+                b as f64 + 0.9 * utils::common::random(),
+            );
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let sphere_material: Arc<dyn Material + Send + Sync> = if choose_mat < 0.8 {
+                    // diffuse
+                    let albedo = Color::random() * Color::random();
+                    Arc::new(Lambertian { albedo })
+                } else if choose_mat < 0.95 {
+                    // metal
+                    let albedo = Color::random_range(0.5, 1.0);
+                    let fuzz = utils::common::random_range(0.0, 0.5);
+                    Arc::new(Metal { albedo, fuzz })
+                } else {
+                    // glass
+                    Arc::new(Dielectric { ref_idx: 1.5 })
+                };
+                let sphere = Sphere::new(center, 0.2, sphere_material);
+                world.add(Box::new(sphere));
+            }
         }
     }
-    pb.finish();
-    Ok(())
+
+    // Three main spheres
+    let material1 = Arc::new(Dielectric { ref_idx: 1.5 });
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1)));
+
+    let material2 = Arc::new(Lambertian { albedo: Color::new(0.4, 0.2, 0.1) });
+    world.add(Box::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2)));
+
+    let material3 = Arc::new(Metal { albedo: Color::new(0.7, 0.6, 0.5), fuzz: 0.0 });
+    world.add(Box::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3)));
+
+    let file = File::create(OUTPUT_FILE).unwrap();
+    let mut writer = BufWriter::new(file);
+    camera.render(&world, &mut writer).unwrap();
 }

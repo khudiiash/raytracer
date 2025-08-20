@@ -4,7 +4,7 @@ use crate::math::ray::Ray;
 use crate::math::interval::Interval;
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Box<dyn Hittable + Send + Sync>>,
 }
 
 impl HittableList {

@@ -1,5 +1,10 @@
+use std::sync::Arc;
+
+use crate::core::material::Material;
+use crate::materials::lambertian::Lambertian;
+use crate::math::color::Color;
 use crate::math::interval::Interval;
-use crate::utils::common::*;
+use crate::math::mat4::Mat4;
 use crate::math::ray::Ray;
 use crate::math::vec3::{Point3, Vec3};
 
@@ -8,6 +13,8 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub transform: Mat4,
+    pub material: Arc<dyn Material + Send + Sync>,
 }
 
 impl Default for HitRecord {
@@ -17,6 +24,8 @@ impl Default for HitRecord {
             normal: Vec3::default(),
             t: 0.0,
             front_face: false,
+            transform: Mat4::make_identity(),
+            material: Arc::new(Lambertian { albedo: Color::default() }),
         }
     }
 }
@@ -28,6 +37,8 @@ impl Clone for HitRecord {
             normal: self.normal.clone(),
             t: self.t,
             front_face: self.front_face,
+            transform: self.transform.clone(),
+            material: self.material.clone(),
         }
     }
 }
@@ -39,6 +50,6 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool;
 }

@@ -44,3 +44,17 @@ impl Ray {
         (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
     }
 }
+
+impl Default for Ray {
+    fn default() -> Self {
+        Ray { origin: Point3::default(), direction: Vec3::default() }
+    }
+}
+
+impl Clone for Ray {
+    fn clone(&self) -> Self {
+        Ray { origin: self.origin.clone(), direction: self.direction.clone() }
+    }
+}
+
+impl Copy for Ray {}
