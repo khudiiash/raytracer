@@ -2,7 +2,7 @@ use crate::core::material::Material;
 use crate::math::color::Color;
 use crate::math::ray::Ray;
 use crate::core::hittable::HitRecord;
-use crate::math::vec3::Vec3;
+use crate::math::vec3::{Vec3, Vec3Ext};
 
 pub struct Diffuse {
     pub albedo: Color,

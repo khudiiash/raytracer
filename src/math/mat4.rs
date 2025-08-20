@@ -1,14 +1,14 @@
 use std::ops::Mul;
 use std::fmt;
 
-use crate::math::{quat::Quat, vec3::Vec3, vec4::Vec4};
+use crate::math::{quat::Quat, vec3::{Vec3, Vec3Ext}, vec4::Vec4};
 
 pub struct Mat4 {
-    pub m: [f64; 16],
+    pub m: [f32; 16],
 }
 
 impl Mat4 {
-    pub fn new(m: [f64; 16]) -> Self {
+    pub fn new(m: [f32; 16]) -> Self {
         Mat4 { m }
     }
 
@@ -21,7 +21,7 @@ impl Mat4 {
         ])
     }
 
-    pub fn make_translation(x: f64, y: f64, z: f64) -> Self {
+    pub fn make_translation(x: f32, y: f32, z: f32) -> Self {
         Mat4::new([
             1.0, 0.0, 0.0, x,
             0.0, 1.0, 0.0, y,
@@ -30,7 +30,7 @@ impl Mat4 {
         ])
     }
 
-    pub fn make_scale(x: f64, y: f64, z: f64) -> Self {
+    pub fn make_scale(x: f32, y: f32, z: f32) -> Self {
         Mat4::new([
             x, 0.0, 0.0, 0.0,
             0.0, y, 0.0, 0.0,
@@ -76,9 +76,9 @@ impl Mat4 {
     /// Returns the transformed Vec3, performing perspective divide if needed.
     pub fn transform_point(&self, point: &Vec3) -> Vec3 {
         // Matrix is in column-major order: m[0..3] is first column, m[4..7] is second, etc.
-        let x = point.x();
-        let y = point.y();
-        let z = point.z();
+        let x = point.x;
+        let y = point.y;
+        let z = point.z;
         let m = &self.m;
 
         let tx = m[0] * x + m[4] * y + m[8]  * z + m[12];
@@ -93,28 +93,28 @@ impl Mat4 {
         }
     }
 
-    pub fn set_translation(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
+    pub fn set_translation(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
         self.m[12] = x;
         self.m[13] = y;
         self.m[14] = z;
         self
     }
 
-    pub fn translate(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
+    pub fn translate(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
         self.m[12] += x;
         self.m[13] += y;
         self.m[14] += z;
         self
     }
 
-    pub fn set_scale(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
+    pub fn set_scale(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
         self.m[0] = x;
         self.m[5] = y;
         self.m[10] = z;
         self
     }
 
-    pub fn scale(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
+    pub fn scale(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
         self.m[0] *= x;
         self.m[5] *= y;
         self.m[10] *= z;
@@ -129,7 +129,7 @@ impl Mat4 {
         self
     }
 
-    pub fn rotate_x(&mut self, angle: f64) -> &mut Self {
+    pub fn rotate_x(&mut self, angle: f32) -> &mut Self {
         let s = angle.sin();
         let c = angle.cos();
         let m1 = self.m[5];
@@ -144,7 +144,7 @@ impl Mat4 {
         self
     }
 
-    pub fn rotate_y(&mut self, angle: f64) -> &mut Self {
+    pub fn rotate_y(&mut self, angle: f32) -> &mut Self {
         let s = angle.sin();
         let c = angle.cos();
         let m0 = self.m[0];
@@ -159,7 +159,7 @@ impl Mat4 {
         self
     }
 
-    pub fn rotate_z(&mut self, angle: f64) -> &mut Self {
+    pub fn rotate_z(&mut self, angle: f32) -> &mut Self {
         let s = angle.sin();
         let c = angle.cos();
         let m0 = self.m[0];
@@ -176,22 +176,22 @@ impl Mat4 {
 
     pub fn look_at(&mut self, eye: &Vec3, center: &Vec3, up: &Vec3) -> &mut Self {
         let mut result = Mat4::make_identity();
-        let f = Vec3::unit_vector(&(*center - *eye));
-        let s = Vec3::unit_vector(&Vec3::cross(&f, &up));
-        let u = Vec3::cross(&s, &f);
+        let f = Vec3::unit_vector(*center - *eye);
+        let s = Vec3::unit_vector(Vec3::cross(f, *up));
+        let u = Vec3::cross(s, f);
 
-        result.m[0] = s.x();
-        result.m[1] = u.x();
-        result.m[2] = -f.x();
-        result.m[4] = s.y();
-        result.m[5] = u.y();
-        result.m[6] = -f.y();
-        result.m[8] = s.z();
-        result.m[9] = u.z();
-        result.m[10] = -f.z();
-        result.m[12] = -Vec3::dot(&s, &eye);
-        result.m[13] = -Vec3::dot(&u, &eye);
-        result.m[14] = Vec3::dot(&f, &eye);
+        result.m[0] = s.x;
+        result.m[1] = u.x;
+        result.m[2] = -f.x;
+        result.m[4] = s.y;
+        result.m[5] = u.y;
+        result.m[6] = -f.y;
+        result.m[8] = s.z;
+        result.m[9] = u.z;
+        result.m[10] = -f.z;
+        result.m[12] = -Vec3::dot(s, *eye);
+        result.m[13] = -Vec3::dot(u, *eye);
+        result.m[14] = Vec3::dot(f, *eye);
         *self = result;
         self
     }
@@ -232,9 +232,9 @@ impl Mul<Vec3> for Mat4 {
 
     fn mul(self, other: Vec3) -> Vec3 {
         Vec3::new(
-            self.m[0] * other.x() + self.m[1] * other.y() + self.m[2] * other.z(),
-            self.m[4] * other.x() + self.m[5] * other.y() + self.m[6] * other.z(),
-            self.m[8] * other.x() + self.m[9] * other.y() + self.m[10] * other.z(),
+            self.m[0] * other.x + self.m[1] * other.y + self.m[2] * other.z,
+            self.m[4] * other.x + self.m[5] * other.y + self.m[6] * other.z,
+            self.m[8] * other.x + self.m[9] * other.y + self.m[10] * other.z,
         )
     }
 }   

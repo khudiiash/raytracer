@@ -2,7 +2,7 @@ use crate::core::material::Material;
 use crate::math::color::Color;
 use crate::math::ray::Ray;
 use crate::core::hittable::HitRecord;
-use crate::math::vec3::Vec3;
+use crate::math::vec3::{Vec3, Vec3Ext};
 
 pub struct Lambertian {
     pub albedo: Color,
@@ -10,7 +10,7 @@ pub struct Lambertian {
 
 impl Default for Lambertian {
     fn default() -> Self {
-        Lambertian { albedo: Color::white() }
+        Lambertian { albedo: Color::new(1.0, 1.0, 1.0) }
     }
 }
 

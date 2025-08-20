@@ -4,25 +4,15 @@ use crate::math::interval::Interval;
 
 pub type Color = Vec3;
 
-impl Color {
-    pub fn white() -> Self {
-        Color { e: [1.0, 1.0, 1.0] }
-    }
-
-    pub fn black() -> Self {
-        Color { e: [0.0, 0.0, 0.0] }
-    }
-}
-
 pub trait WritableColor {
     fn write_color(&self, writer: &mut BufWriter<File>) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 impl WritableColor for Color {
     fn write_color(&self, writer: &mut BufWriter<File>) -> Result<(), Box<dyn std::error::Error>> {
-        let r = self.x();
-        let g = self.y();
-        let b = self.z();
+        let r = self.x;
+        let g = self.y;
+        let b = self.z;
 
         // Apply gamma correction
         let r = linear_to_gamma(r);

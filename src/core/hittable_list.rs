@@ -31,3 +31,9 @@ impl HittableList {
         hit_anything
     }
 }
+
+impl Hittable for HittableList {
+    fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
+        self.hit(r, interval, rec)
+    }
+}

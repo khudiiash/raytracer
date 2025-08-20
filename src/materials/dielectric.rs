@@ -2,15 +2,15 @@ use crate::core::material::Material;
 use crate::math::color::Color;
 use crate::math::ray::Ray;
 use crate::core::hittable::HitRecord;
-use crate::math::vec3::Vec3;
+use crate::math::vec3::{Vec3, Vec3Ext};
 use crate::utils::common::random;
 
 pub struct Dielectric {
-    pub ref_idx: f64,
+    pub ref_idx: f32,
 }
 
 impl Dielectric {
-    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+    fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
         let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
         r0 * r0 + (1.0 - r0 * r0) * (1.0 - cosine).powi(5)
     }
@@ -26,15 +26,15 @@ impl Material for Dielectric {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
         *attenuation = Color::new(1.0, 1.0, 1.0);
         let ri = if rec.front_face { 1.0 / self.ref_idx } else { self.ref_idx };
-        let unit_direction = Vec3::unit_vector(&r_in.direction);
-        let cos_theta = Vec3::dot(&-unit_direction, &rec.normal);
+        let unit_direction = r_in.direction.normalize();
+        let cos_theta = -unit_direction.dot(rec.normal);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.0;
         let direction = if cannot_refract || Dielectric::reflectance(cos_theta, ri) > random() {
-            Vec3::reflect(&unit_direction, &rec.normal)
+            unit_direction.reflect(rec.normal).normalize()
         } else {
-            Vec3::refract(&unit_direction, &rec.normal, ri)
+            unit_direction.refract(rec.normal, ri).normalize()
         };
 
         *scattered = Ray { origin: rec.point, direction };

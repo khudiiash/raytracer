@@ -3,14 +3,14 @@ use std::ops::Mul;
 use crate::math::vec3::Vec3;
 
 pub struct Quat {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-    pub w: f64,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub w: f32,
 }
 
 impl Quat {
-    pub fn new(x: f64, y: f64, z: f64, w: f64) -> Self {
+    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
         Quat { x, y, z, w }
     }
 
@@ -18,7 +18,7 @@ impl Quat {
         Quat { x: 0.0, y: 0.0, z: 0.0, w: 1.0 }
     }
 
-    pub fn from_euler(x: f64, y: f64, z: f64) -> Self {
+    pub fn from_euler(x: f32, y: f32, z: f32) -> Self {
         let x = x * 0.5;
         let y = y * 0.5;
         let z = z * 0.5;
@@ -59,16 +59,16 @@ impl Mul<Vec3> for Quat {
 
     fn mul(self, other: Vec3) -> Vec3 {
         let qv = Vec3::new(self.x, self.y, self.z);
-        let uv = Vec3::cross(&qv, &other);
-        let uuv = Vec3::cross(&qv, &uv);
-        uv * (2.0 * self.w) + uuv * 2.0 + other * (self.w * self.w - Vec3::dot(&qv, &qv))
+        let uv = Vec3::cross(qv, other.clone());
+        let uuv = Vec3::cross(qv, uv);
+        uv * (2.0 * self.w) + uuv * 2.0 + other * (self.w * self.w - Vec3::dot(qv, qv.clone()))
     }
 }
 
-impl Mul<f64> for Quat {
+impl Mul<f32> for Quat {
     type Output = Quat;
 
-    fn mul(self, other: f64) -> Quat {
+    fn mul(self, other: f32) -> Quat {
         Quat { x: self.x * other, y: self.y * other, z: self.z * other, w: self.w * other }
     }
 }   

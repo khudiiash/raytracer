@@ -5,29 +5,29 @@ use crate::math::vec3::Vec3;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec4 {
-    pub e: [f64; 4],
-    pub w: f64,
+    pub e: [f32; 4],
+    pub w: f32,
 }
 
 impl Vec4 {
-    pub fn new(e0: f64, e1: f64, e2: f64, w: f64) -> Self {
+    pub fn new(e0: f32, e1: f32, e2: f32, w: f32) -> Self {
         Self { e: [e0, e1, e2, w], w }
     }
 
-    pub fn x(&self) -> f64 { self.e[0] }
-    pub fn y(&self) -> f64 { self.e[1] }
-    pub fn z(&self) -> f64 { self.e[2] }
-    pub fn w(&self) -> f64 { self.e[3] }
+    pub fn x(&self) -> f32 { self.e[0] }
+    pub fn y(&self) -> f32 { self.e[1] }
+    pub fn z(&self) -> f32 { self.e[2] }
+    pub fn w(&self) -> f32 { self.e[3] }
 
-    pub fn length(&self) -> f64 {
+    pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
     }
 
-    pub fn length_squared(&self) -> f64 {
+    pub fn length_squared(&self) -> f32 {
         self.e[0]*self.e[0] + self.e[1]*self.e[1] + self.e[2]*self.e[2] + self.e[3]*self.e[3]
     }
     
-    pub fn dot(u: &Vec4, v: &Vec4) -> f64 {
+    pub fn dot(u: &Vec4, v: &Vec4) -> f32 {
         u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2] + u.e[3] * v.e[3]
     }
     
@@ -57,7 +57,7 @@ impl Vec4 {
     
     
     
-    pub fn random_range(min: f64, max: f64) -> Vec4 {
+    pub fn random_range(min: f32, max: f32) -> Vec4 {
         Vec4::new(random_range(min, max), random_range(min, max), random_range(min, max), random_range(min, max))
     }
     
@@ -83,17 +83,17 @@ impl Mul<Vec3> for Vec4 {
 
     fn mul(self, other: Vec3) -> Vec3 {
         Vec3::new(
-            self.e[0] * other.x(),
-            self.e[1] * other.y(),
-            self.e[2] * other.z(),
+            self.e[0] * other.x,
+            self.e[1] * other.y,
+            self.e[2] * other.z,
         )
     }
 }
 
-impl Mul<f64> for Vec4 {
+impl Mul<f32> for Vec4 {
     type Output = Vec4;
 
-    fn mul(self, t: f64) -> Vec4 {
+    fn mul(self, t: f32) -> Vec4 {
         Vec4::new(
             self.e[0] * t,
             self.e[1] * t,
@@ -103,10 +103,10 @@ impl Mul<f64> for Vec4 {
     }
 }
 
-impl Div<f64> for Vec4 {
+impl Div<f32> for Vec4 {
     type Output = Vec4;
 
-    fn div(self, t: f64) -> Vec4 {
+    fn div(self, t: f32) -> Vec4 {
         Vec4::new(
             self.e[0] / t,
             self.e[1] / t,

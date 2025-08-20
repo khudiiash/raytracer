@@ -5,11 +5,11 @@ use crate::math::ray::Ray;
 use crate::math::vec3::Point3;
 
 pub struct DiffuseLight {
-    emit: Color,
+    pub emit: Color,
 }
 
 impl Material for DiffuseLight {
-    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color {
+    fn emitted(&self, u: f32, v: f32, p: &Point3) -> Color {
         self.emit
     }
 

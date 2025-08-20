@@ -1,27 +1,27 @@
 pub struct Interval {
-    pub min: f64,
-    pub max: f64,
+    pub min: f32,
+    pub max: f32,
 }
 
 impl Interval {
-    pub fn new(min: f64, max: f64) -> Self {
+    pub fn new(min: f32, max: f32) -> Self {
         Interval { min, max }
     }
 
-    pub fn contains(&self, x: f64) -> bool {
+    pub fn contains(&self, x: f32) -> bool {
         self.min <= x && x <= self.max
     }
 
-    pub fn surrounds(&self, x: f64) -> bool {
+    pub fn surrounds(&self, x: f32) -> bool {
         self.min < x && x < self.max
     }
 
-    pub fn clamp(&self, x: f64) -> f64 {
+    pub fn clamp(&self, x: f32) -> f32 {
         if x < self.min { return self.min; }
         if x > self.max { return self.max; }
         x
     }
 }
 
-pub const EMPTY: Interval = Interval { min: f64::INFINITY, max: f64::NEG_INFINITY };
-pub const UNIVERSE: Interval = Interval { min: f64::NEG_INFINITY, max: f64::INFINITY };
+pub const EMPTY: Interval = Interval { min: f32::INFINITY, max: f32::NEG_INFINITY };
+pub const UNIVERSE: Interval = Interval { min: f32::NEG_INFINITY, max: f32::INFINITY };

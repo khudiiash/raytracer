@@ -1,7 +1,5 @@
 pub mod sphere;
-pub mod cylinder;
+pub mod quad;
 pub mod cuboid;
 
-pub use sphere::Sphere;
-pub use cylinder::Cylinder;
-pub use cuboid::Cuboid;
+pub use quad::Quad;
