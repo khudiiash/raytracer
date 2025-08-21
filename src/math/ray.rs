@@ -40,7 +40,7 @@ impl Ray {
         }
         // Sky gradient
         let unit_direction = Vec3::unit_vector(&self.direction);
-        let a = 0.5 * (unit_direction.y() + 1.0);
+        let a = 0.5 * (unit_direction.y + 1.0);
         (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
     }
 }

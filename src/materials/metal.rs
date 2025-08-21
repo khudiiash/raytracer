@@ -4,6 +4,7 @@ use crate::math::ray::Ray;
 use crate::core::hittable::HitRecord;
 use crate::math::vec3::Vec3;
 
+#[derive(Clone)]
 pub struct Metal {
     pub albedo: Color,
     pub fuzz: f64,

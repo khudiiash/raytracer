@@ -5,6 +5,7 @@ use crate::core::hittable::HitRecord;
 use crate::math::vec3::Vec3;
 use crate::utils::common::random;
 
+#[derive(Clone)]
 pub struct Dielectric {
     pub ref_idx: f64,
 }

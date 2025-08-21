@@ -5,7 +5,7 @@ use crate::math::ray::Ray;
 use crate::math::vec3::Point3;
 
 pub struct DiffuseLight {
-    emit: Color,
+    pub emit: Color,
 }
 
 impl Material for DiffuseLight {
