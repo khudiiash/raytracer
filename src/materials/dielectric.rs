@@ -5,12 +5,13 @@ use crate::core::hittable::HitRecord;
 use crate::math::vec3::{Vec3, Vec3Ext};
 use crate::utils::common::random;
 
+#[derive(Clone)]
 pub struct Dielectric {
-    pub ref_idx: f32,
+    pub ref_idx: f64,
 }
 
 impl Dielectric {
-    fn reflectance(cosine: f32, ref_idx: f32) -> f32 {
+    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
         let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
         r0 * r0 + (1.0 - r0 * r0) * (1.0 - cosine).powi(5)
     }

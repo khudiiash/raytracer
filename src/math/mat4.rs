@@ -4,11 +4,11 @@ use std::fmt;
 use crate::math::{quat::Quat, vec3::{Vec3, Vec3Ext}, vec4::Vec4};
 
 pub struct Mat4 {
-    pub m: [f32; 16],
+    pub m: [f64; 16],
 }
 
 impl Mat4 {
-    pub fn new(m: [f32; 16]) -> Self {
+    pub fn new(m: [f64; 16]) -> Self {
         Mat4 { m }
     }
 
@@ -21,7 +21,7 @@ impl Mat4 {
         ])
     }
 
-    pub fn make_translation(x: f32, y: f32, z: f32) -> Self {
+    pub fn make_translation(x: f64, y: f64, z: f64) -> Self {
         Mat4::new([
             1.0, 0.0, 0.0, x,
             0.0, 1.0, 0.0, y,
@@ -30,7 +30,7 @@ impl Mat4 {
         ])
     }
 
-    pub fn make_scale(x: f32, y: f32, z: f32) -> Self {
+    pub fn make_scale(x: f64, y: f64, z: f64) -> Self {
         Mat4::new([
             x, 0.0, 0.0, 0.0,
             0.0, y, 0.0, 0.0,
@@ -93,28 +93,28 @@ impl Mat4 {
         }
     }
 
-    pub fn set_translation(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
+    pub fn set_translation(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
         self.m[12] = x;
         self.m[13] = y;
         self.m[14] = z;
         self
     }
 
-    pub fn translate(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
+    pub fn translate(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
         self.m[12] += x;
         self.m[13] += y;
         self.m[14] += z;
         self
     }
 
-    pub fn set_scale(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
+    pub fn set_scale(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
         self.m[0] = x;
         self.m[5] = y;
         self.m[10] = z;
         self
     }
 
-    pub fn scale(&mut self, x: f32, y: f32, z: f32) -> &mut Self {
+    pub fn scale(&mut self, x: f64, y: f64, z: f64) -> &mut Self {
         self.m[0] *= x;
         self.m[5] *= y;
         self.m[10] *= z;
@@ -129,7 +129,7 @@ impl Mat4 {
         self
     }
 
-    pub fn rotate_x(&mut self, angle: f32) -> &mut Self {
+    pub fn rotate_x(&mut self, angle: f64) -> &mut Self {
         let s = angle.sin();
         let c = angle.cos();
         let m1 = self.m[5];
@@ -144,7 +144,7 @@ impl Mat4 {
         self
     }
 
-    pub fn rotate_y(&mut self, angle: f32) -> &mut Self {
+    pub fn rotate_y(&mut self, angle: f64) -> &mut Self {
         let s = angle.sin();
         let c = angle.cos();
         let m0 = self.m[0];
@@ -159,7 +159,7 @@ impl Mat4 {
         self
     }
 
-    pub fn rotate_z(&mut self, angle: f32) -> &mut Self {
+    pub fn rotate_z(&mut self, angle: f64) -> &mut Self {
         let s = angle.sin();
         let c = angle.cos();
         let m0 = self.m[0];

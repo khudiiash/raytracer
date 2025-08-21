@@ -9,12 +9,18 @@ pub struct DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn emitted(&self, u: f32, v: f32, p: &Point3) -> Color {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color {
         self.emit
     }
 
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
         false
+    }
+}
+
+impl Clone for DiffuseLight {
+    fn clone(&self) -> Self {
+        DiffuseLight { emit: self.emit.clone() }
     }
 }
 

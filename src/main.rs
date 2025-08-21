@@ -10,6 +10,6 @@ use demos::cornell_box::cornell_box;
 use demos::spheres::spheres;
 
 fn main() {
-   //cornell_box();
-   spheres();
+   cornell_box();
+   //spheres();
 }

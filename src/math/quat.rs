@@ -3,14 +3,14 @@ use std::ops::Mul;
 use crate::math::vec3::Vec3;
 
 pub struct Quat {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub w: f32,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
 }
 
 impl Quat {
-    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
+    pub fn new(x: f64, y: f64, z: f64, w: f64) -> Self {
         Quat { x, y, z, w }
     }
 
@@ -18,7 +18,7 @@ impl Quat {
         Quat { x: 0.0, y: 0.0, z: 0.0, w: 1.0 }
     }
 
-    pub fn from_euler(x: f32, y: f32, z: f32) -> Self {
+    pub fn from_euler(x: f64, y: f64, z: f64) -> Self {
         let x = x * 0.5;
         let y = y * 0.5;
         let z = z * 0.5;
@@ -65,10 +65,10 @@ impl Mul<Vec3> for Quat {
     }
 }
 
-impl Mul<f32> for Quat {
+impl Mul<f64> for Quat {
     type Output = Quat;
 
-    fn mul(self, other: f32) -> Quat {
+    fn mul(self, other: f64) -> Quat {
         Quat { x: self.x * other, y: self.y * other, z: self.z * other, w: self.w * other }
     }
 }   

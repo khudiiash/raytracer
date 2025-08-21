@@ -6,12 +6,18 @@ use crate::math::vec3::{Vec3, Vec3Ext};
 
 pub struct Metal {
     pub albedo: Color,
-    pub fuzz: f32,
+    pub fuzz: f64,
 }
 
 impl Default for Metal {
     fn default() -> Self {
         Metal { albedo: Color::new(0.5, 0.5, 0.5), fuzz: 0.1 }
+    }
+}
+
+impl Clone for Metal {
+    fn clone(&self) -> Self {
+        Metal { albedo: self.albedo.clone(), fuzz: self.fuzz }
     }
 }
 

@@ -1,19 +1,29 @@
-use crate::utils::common::*;
+use crate::math::aabb::Aabb;
 use crate::core::hittable::{Hittable, HitRecord};
+use crate::math::bvh_node::BvhNode;
 use crate::math::ray::Ray;
 use crate::math::interval::Interval;
+use std::sync::Arc;
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable + Send + Sync>>,
+    pub objects: Vec<Arc<dyn Hittable + Send + Sync>>,
+    pub bbox: Aabb,
 }
 
 impl HittableList {
     pub fn new() -> Self {
-        HittableList { objects: Vec::new() }
+        HittableList { objects: Vec::new(), bbox: Aabb::empty() }
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
-        self.objects.push(object);
+    pub fn from_bvh(bvh: BvhNode) -> Self {
+        HittableList { objects: vec![Arc::new(bvh)], bbox: Aabb::empty() }
+    }
+
+    pub fn add<T>(&mut self, object: T) where T: Hittable + Send + Sync + 'static,
+    {
+        let arc_obj = Arc::new(object);
+        self.bbox = Aabb::from_aabb(&self.bbox, &arc_obj.bounding_box());
+        self.objects.push(arc_obj);
     }
 
     pub fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
@@ -35,5 +45,9 @@ impl HittableList {
 impl Hittable for HittableList {
     fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
         self.hit(r, interval, rec)
+    }
+
+    fn bounding_box(&self) -> &Aabb {
+        &self.bbox
     }
 }

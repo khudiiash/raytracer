@@ -3,6 +3,9 @@ name = "raytracer"
 version = "0.1.0"
 edition = "2024"
 
+[profile.release]
+debug = true
+
 [dependencies]
 glam = "0.25"
 indicatif = "0.18.0"
