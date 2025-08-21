@@ -2,7 +2,7 @@ use std::{fs::File, io::{self, BufWriter, Write}};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 
-use crate::math::{mat4::Mat4, vec3::{Point3, Vec3, Vec3Ext}};
+use crate::math::{vec3::{Point3, Vec3}};
 use crate::math::ray::Ray;
 use crate::math::color::{Color, WritableColor};
 use crate::math::interval::Interval;
@@ -18,10 +18,9 @@ const MAX_COLOR: u8 = 255;
 const VIEWPORT_HEIGHT: f64 = 2.0;
 const VIEWPORT_WIDTH: f64 = VIEWPORT_HEIGHT * (IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64);
 const FOCAL_LENGTH: f64 = 1.0;
-const CAMERA_CENTER: Point3 = Point3::new(0.0, 0.0, 0.0);
+const CAMERA_CENTER: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
 
 pub struct Camera {
-    pub transform: Mat4,
     pub aspect_ratio: f64, // Ratio of image width over height
     pub image_width: u64, // Rendered image width in pixel count
     pub samples_per_pixel: u64, // Count of random samples for each pixel
@@ -52,7 +51,6 @@ pub struct Camera {
 impl Camera {
     pub fn new() -> Self {
         Camera {
-            transform: Mat4::make_identity(),
             aspect_ratio: ASPECT_RATIO,
             image_width: IMAGE_WIDTH,
             samples_per_pixel: 100,
@@ -129,9 +127,9 @@ impl Camera {
         let viewport_height = 2.0 * h * self.focus_distance;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
-        self.w = Vec3::unit_vector(self.eye - self.look_at);
-        self.u = Vec3::unit_vector(Vec3::cross(self.up, self.w));
-        self.v = Vec3::cross(self.w, self.u);
+        self.w = Vec3::unit_vector(&(self.eye - self.look_at));
+        self.u = Vec3::unit_vector(&Vec3::cross(&self.up, &self.w));
+        self.v = Vec3::cross(&self.w, &self.u);
 
         let viewport_u = viewport_width * self.u;
         let viewport_v = viewport_height * -self.v;
@@ -149,7 +147,7 @@ impl Camera {
 
     pub fn defocus_disk_sample(&self) -> Vec3 {
         // Returns a random point in the camera defocus disk.
-        let p = Vec3::random_in_unit_disk();
+        let p = Vec3::random_on_unit_disk();
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
     }
 
@@ -186,41 +184,11 @@ impl Camera {
     }
 
     fn sample_disk(&self, radius: f64) -> Vec3 {
-        radius * Vec3::random_in_unit_disk()
+        radius * Vec3::random_on_unit_disk()
     }
 
 
     fn sample_square(&self) -> Vec3 {
         Vec3::new(random() - 0.5, random() - 0.5, 0.0)
-    }
-}
-
-impl Clone for Camera {
-    fn clone(&self) -> Self {
-        Camera {
-            transform: self.transform.clone(),
-            aspect_ratio: self.aspect_ratio,
-            image_width: self.image_width,
-            samples_per_pixel: self.samples_per_pixel,
-            max_depth: self.max_depth,
-            image_height: self.image_height,
-            center: self.center,
-            pixel_delta_u: self.pixel_delta_u,
-            pixel_delta_v: self.pixel_delta_v,
-            pixel00_loc: self.pixel00_loc,
-            pixel_samples_scale: self.pixel_samples_scale,
-            up: self.up,
-            defocus_disk_u: self.defocus_disk_u,
-            defocus_disk_v: self.defocus_disk_v,
-            vfov: self.vfov,
-            eye: self.eye,
-            look_at: self.look_at,
-            defocus_angle: self.defocus_angle,
-            focus_distance: self.focus_distance,
-            w: self.w,
-            u: self.u,
-            v: self.v,
-            background: self.background,
-        }
     }
 }

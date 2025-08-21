@@ -21,10 +21,10 @@ pub struct Quad {
 
 impl Quad {
     pub fn new(q: Point3, u: Vec3, v: Vec3, material: Arc<dyn Material + Send + Sync>) -> Self {
-        let n = u.cross(v);
-        let normal = n.clone().normalize();
-        let d = normal.dot(q);
-        let w = n / n.dot(n);
+        let n = Vec3::cross(&u, &v);
+        let normal = Vec3::unit_vector(&n);
+        let d = Vec3::dot(&normal, &q);
+        let w = n / Vec3::dot(&n, &n);
 
         // Compute the bounding box of all four vertices.
         let p0 = q;
@@ -62,7 +62,7 @@ impl Quad {
 
 impl Hittable for Quad {
     fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
-        let denom = self.normal.dot(r.direction);
+        let denom = Vec3::dot(&self.normal, &r.direction);
 
         // No hit if the ray is parallel to the plane.
         if denom.abs() < 1e-8 {
@@ -70,7 +70,7 @@ impl Hittable for Quad {
         }
 
         // Compute intersection t
-        let t = (self.d - self.normal.dot(r.origin)) / denom;
+        let t = (self.d - Vec3::dot(&self.normal, &r.origin)) / denom;
         if !interval.contains(t) {
             return false;
         }
@@ -78,8 +78,8 @@ impl Hittable for Quad {
         // Compute intersection point and check if inside quad
         let intersection = r.at(t);
         let planar_hitpt_vector = intersection - self.q;
-        let alpha = Vec3::dot(self.w, Vec3::cross(planar_hitpt_vector, self.v));
-        let beta = Vec3::dot(self.w, Vec3::cross(self.u, planar_hitpt_vector));
+        let alpha = Vec3::dot(&self.w, &Vec3::cross(&planar_hitpt_vector, &self.v));
+        let beta = Vec3::dot(&self.w, &Vec3::cross(&self.u, &planar_hitpt_vector));
 
         if !self.is_interior(alpha, beta, rec) {
             return false;
@@ -99,8 +99,8 @@ impl Hittable for Quad {
 }
 
 pub fn make_box(a: Point3, b: Point3, material: Arc<dyn Material + Send + Sync>) -> HittableList {
-    let min = a.min(b);
-    let max = a.max(b);
+    let min = Vec3::min(&a, &b);
+    let max = Vec3::max(&a, &b);
 
     let dx = Vec3::new(max.x - min.x, 0.0, 0.0);
     let dy = Vec3::new(0.0, max.y - min.y, 0.0);

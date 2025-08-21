@@ -18,9 +18,3 @@ impl Material for DiffuseLight {
     }
 }
 
-impl Clone for DiffuseLight {
-    fn clone(&self) -> Self {
-        DiffuseLight { emit: self.emit.clone() }
-    }
-}
-

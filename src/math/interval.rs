@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Interval {
     pub min: f64,
     pub max: f64,
@@ -92,5 +92,12 @@ impl std::ops::Add<Interval> for f64 {
     type Output = Interval;
     fn add(self, ival: Interval) -> Interval {
         ival + self
+    }
+}
+
+
+impl Clone for Interval {
+    fn clone(&self) -> Self {
+        Interval { min: self.min, max: self.max }
     }
 }

@@ -1,7 +1,6 @@
-use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::math::bvh_node::BvhNode;
-use crate::math::vec3::{Point3, Vec3, Vec3Ext};
+use crate::math::vec3::{Point3, Vec3};
 use crate::sdf::sphere::Sphere;
 use crate::core::hittable_list::HittableList;
 use crate::core::camera::Camera;
@@ -71,9 +70,9 @@ pub fn spheres() {
     // Camera
     let mut camera = Camera::new();
     camera.aspect_ratio = 16.0 / 9.0;
-    camera.image_width = 600;
-    camera.samples_per_pixel = 100;
-    camera.max_depth = 50;
+    camera.image_width = 1200;
+    camera.samples_per_pixel = 500;
+    camera.max_depth = 10;
     camera.vfov = 20.0;
     camera.eye = Point3::new(13.0, 2.0, 3.0);
     camera.look_at = Point3::new(0.0, 0.0, 0.0);

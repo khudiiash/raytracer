@@ -4,6 +4,18 @@ use crate::math::interval::Interval;
 
 pub type Color = Vec3;
 
+
+
+impl Color {
+    pub fn white() -> Self {
+        Color { x: 1.0, y: 1.0, z: 1.0 }
+    }
+
+    pub fn black() -> Self {
+        Color { x: 0.0, y: 0.0, z: 0.0 }
+    }
+}
+
 pub trait WritableColor {
     fn write_color(&self, writer: &mut BufWriter<File>) -> Result<(), Box<dyn std::error::Error>>;
 }

@@ -15,10 +15,9 @@ pub fn random_range(min: f64, max: f64) -> f64 {
     rand::thread_rng().gen_range(min..max)
 }
 
-pub fn random_int(min: i64, max: i64) -> i64 {
+pub fn random_int(min: i32, max: i32) -> i32 {
     rand::thread_rng().gen_range(min..max) 
 }
-
 
 pub fn linear_to_gamma(linear_component: f64) -> f64 {
     if linear_component > 0.001 {

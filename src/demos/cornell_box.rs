@@ -22,25 +22,25 @@ pub fn cornell_box() {
     let red   = Lambertian { albedo: Color::new(0.65, 0.05, 0.05) };
     let white = Lambertian { albedo: Color::new(0.73, 0.73, 0.73) };
     let green = Lambertian { albedo: Color::new(0.12, 0.45, 0.15) };
-    let light = DiffuseLight { emit: Color::new(15.0, 15.0, 15.0) };
+    let light = DiffuseLight { emit: Color::new(14.352, 9.828, 6.24) };
 
     // Geometry
     world.add(Quad::new(
         Point3::new(555.0, 0.0, 0.0),
         Vec3::new(0.0, 555.0, 0.0),
         Vec3::new(0.0, 0.0, 555.0),
-        Arc::new(green.clone()),
+        Arc::new(red.clone()),
     ));
     world.add(Quad::new(
         Point3::new(0.0, 0.0, 0.0),
         Vec3::new(0.0, 555.0, 0.0),
         Vec3::new(0.0, 0.0, 555.0),
-        Arc::new(red.clone()),
+        Arc::new(green.clone()),
     ));
     world.add(Quad::new(
-        Point3::new(343.0, 555.0, 332.0),
+        Point3::new(343.0, 548.8, 227.0),
         Vec3::new(-130.0, 0.0, 0.0),
-        Vec3::new(0.0, 0.0, -105.0),
+        Vec3::new(0.0, 0.0, 104.0),
         Arc::new(light),
     ));
     world.add(Quad::new(
@@ -83,24 +83,18 @@ pub fn cornell_box() {
 
     // Camera settings
     camera.aspect_ratio = 1.0;
-    camera.image_width = 300;
-    camera.samples_per_pixel = 100;
-    camera.max_depth = 5;
+    camera.image_width = 1200;
+    camera.samples_per_pixel = 2000;
     camera.background = Color::new(0.0, 0.0, 0.0);
 
     camera.vfov = 40.0;
-    camera.eye = Point3::new(278.0, 278.0, -800.0);
-    camera.look_at = Point3::new(278.0, 278.0, 0.0);
+    camera.eye = Point3::new(278.0, 273.0, -800.0);
+    camera.look_at = Point3::new(278.0, 273.0, 0.0);
     camera.up = Vec3::new(0.0, 1.0, 0.0);
-
-    camera.defocus_angle = 0.0;
 
     // File
     let file = File::create(OUTPUT_FILE).unwrap();
     let mut writer = BufWriter::new(file);
-
-    // test sphere
-    world.add(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, Arc::new(white)));
 
     let bvh_node = BvhNode::new_from_list(world.objects.clone());
     let world = HittableList::from_bvh(bvh_node);
