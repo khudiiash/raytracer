@@ -8,7 +8,7 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
 
@@ -20,11 +20,15 @@ impl Vec3 {
         self.x*self.x + self.y*self.y + self.z*self.z
     }
 
-    pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
+    pub fn dot_two(u: Vec3, v: Vec3) -> f64 {
         u.x*v.x + u.y*v.y + u.z*v.z
     }
 
-    pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
+    pub fn dot(self, v: Vec3) -> f64 {
+        self.x*v.x + self.y*v.y + self.z*v.z
+    }
+
+    pub fn cross_two(u: Vec3, v: Vec3) -> Vec3 {
         Vec3 {
             x: u.y*v.z - u.z*v.y,
             y: u.z*v.x - u.x*v.z,
@@ -32,14 +36,30 @@ impl Vec3 {
         }
     }
 
-    pub fn unit_vector(v: &Vec3) -> Vec3 {
-        *v / v.length()
+    pub fn cross(self, v: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.y * v.z - self.z * v.y,
+            y: self.z * v.x - self.x * v.z,
+            z: self.x * v.y - self.y * v.x,
+        }
     }
 
-    pub fn min(u: &Vec3, v: &Vec3) -> Vec3 {
+    pub fn unit_vector(v: Vec3) -> Vec3 {
+        v / v.length()
+    }
+
+    pub fn min(self, v: Vec3) -> Vec3 {
+        Vec3::new(self.x.min(v.x), self.y.min(v.y), self.z.min(v.z))
+    }
+
+    pub fn max(self, v: Vec3) -> Vec3 {
+        Vec3::new(self.x.max(v.x), self.y.max(v.y), self.z.max(v.z))
+    }
+
+    pub fn min_two(u: Vec3, v: Vec3) -> Vec3 {
         Vec3::new(u.x.min(v.x), u.y.min(v.y), u.z.min(v.z))
     }
-    pub fn max(u: &Vec3, v: &Vec3) -> Vec3 {
+    pub fn max_two(u: Vec3, v: Vec3) -> Vec3 {
         Vec3::new(u.x.max(v.x), u.y.max(v.y), u.z.max(v.z))
     }
 
@@ -47,8 +67,8 @@ impl Vec3 {
         loop {
             let p = Vec3::random_range(-1.0, 1.0);
             let length_sq = p.length_squared();
-            if EPSILON < length_sq && length_sq < 1.0 { 
-                return p / length_sq.sqrt(); 
+            if EPSILON < length_sq && length_sq < 1.0 {
+                return p / length_sq.sqrt();
             }
         }
     }
@@ -62,9 +82,9 @@ impl Vec3 {
         }
     }
 
-    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
         let on_unit_sphere = Vec3::random_unit_vector();
-        if Vec3::dot(&on_unit_sphere, normal) > 0.0 {
+        if Vec3::dot_two(on_unit_sphere, normal) > 0.0 {
             on_unit_sphere
         } else {
             -on_unit_sphere
@@ -84,14 +104,14 @@ impl Vec3 {
         self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
     }
 
-    pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-        *v - 2.0 * Vec3::dot(v, n) * *n
+    pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+        v - 2.0 * Vec3::dot_two(v, n) * n
     }
 
-    pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
-        let cos_theta = Vec3::dot(&-*uv, n);
-        let r_out_perp = etai_over_etat * (*uv + cos_theta * *n);
-        let r_out_parallel = -((1.0 - r_out_perp.length_squared()).abs().sqrt() * *n);
+    pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) -> Vec3 {
+        let cos_theta = Vec3::dot_two(-uv, n);
+        let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+        let r_out_parallel = -((1.0 - r_out_perp.length_squared()).abs().sqrt() * n);
         r_out_perp + r_out_parallel
     }
 

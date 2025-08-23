@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::core::hittable::{Hittable, HitRecord};
 use crate::core::material::Material;
 use crate::math::aabb::Aabb;
@@ -10,12 +8,12 @@ use crate::math::ray::Ray;
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub mat: Arc<dyn Material + Send + Sync>,
+    pub mat: &'static dyn Material,
     pub bbox: Aabb,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat: Arc<dyn Material + Send + Sync>) -> Self {
+    pub fn new(center: Point3, radius: f64, mat: &'static dyn Material) -> Self {
         let rvec = Vec3::new(radius, radius, radius);
         let bbox = Aabb::from_points(&(center - rvec), &(center + rvec));
         Sphere { center, radius, mat, bbox }
@@ -23,10 +21,10 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool {
         let oc = self.center - r.origin;
         let a = r.direction.length_squared();
-        let h = Vec3::dot(&r.direction, &oc);
+        let h = Vec3::dot_two(r.direction, oc);
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = h * h - a * c;
 
@@ -45,9 +43,9 @@ impl Hittable for Sphere {
 
         rec.t = root;
         rec.point = r.at(rec.t);
-        let outward_normal = Vec3::unit_vector(&(rec.point - self.center));
-        rec.set_face_normal(r, &outward_normal);
-        rec.material = self.mat.clone();
+        let outward_normal = Vec3::unit_vector(rec.point - self.center);
+        rec.set_face_normal(r, outward_normal);
+        rec.material = Some(self.mat);
         true
     }
 

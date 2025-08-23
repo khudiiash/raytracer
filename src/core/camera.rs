@@ -1,6 +1,7 @@
-use std::{fs::File, io::{self, BufWriter, Write}};
+use std::{fs::File, io::{self, BufWriter, Write}, time::Instant};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::math::{vec3::{Point3, Vec3}};
 use crate::math::ray::Ray;
@@ -26,7 +27,7 @@ pub struct Camera {
     pub samples_per_pixel: u64, // Count of random samples for each pixel
     pub max_depth: u64, // Maximum depth of ray recursion
     pub background: Color, // Scene background color
-    
+
     pub defocus_angle: f64, // The angle of the defocus disk
     pub focus_distance: f64, // The distance to the focal plane
     pub vfov: f64,
@@ -82,7 +83,7 @@ impl Camera {
         writeln!(writer, "P3\n{} {}\n{}", self.image_width, self.image_height, MAX_COLOR)?;
 
         let pb = ProgressBar::new(((self.image_width * self.image_height)).into());
-        pb.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {percent}%").unwrap());
+        pb.set_style(ProgressStyle::with_template("{spinner:.green} {msg} [{bar:20.cyan/blue}] {percent}% [{elapsed_precise}]").unwrap());
 
         // Prepare all pixel coordinates
         let image_width = self.image_width;
@@ -95,14 +96,27 @@ impl Camera {
         let pixels: Vec<(u64, u64)> = (0..image_height)
             .flat_map(|j| (0..image_width).map(move |i| (i, j)))
             .collect();
+        // Start time
+        let start_time = Instant::now();
+        let total_samples = (image_width * image_height * samples_per_pixel) as u64;
+        let samples_rendered = AtomicU64::new(0);
 
         // Parallel rendering
         let pixel_colors: Vec<Color> = pixels.par_iter().map(|&(i, j)| {
             let mut pixel_color = Color::default();
             for _ in 0..samples_per_pixel {
                 let ray = self.get_ray(i, j);
-                pixel_color += self.ray_color(&ray, max_depth, world);
+                pixel_color += self.ray_color(ray, max_depth, world);
+                samples_rendered.fetch_add(1, Ordering::Relaxed);
             }
+            // Update progress bar
+            let elapsed_time = start_time.elapsed().as_secs_f64();
+            let rendered_samples = samples_rendered.load(Ordering::Relaxed);
+            let render_speed = rendered_samples as f64 / (elapsed_time * 1000.0); // Convert seconds to milliseconds
+            pb.set_message(format!(
+                "{} samples/ms | {}/{} ",
+                fmt_samples(render_speed as u64), fmt_samples(rendered_samples as u64), fmt_samples(total_samples),
+            ));
             pb.inc(1);
             pixel_color * pixel_samples_scale
         }).collect();
@@ -111,7 +125,11 @@ impl Camera {
         for color in pixel_colors.iter() {
             color.write_color(writer).unwrap();
         }
-        pb.finish();
+        let total_time = start_time.elapsed().as_secs_f64();
+        let average_speed = total_samples as f64 / (total_time * 1000.0);
+        pb.finish_with_message("Rendering complete!");
+        println!("Total samples: {}, Total Time: {}, Average speed: {} samples/ms",
+            fmt_samples(total_samples), fmt_time(total_time), average_speed);
         Ok(())
     }
 
@@ -127,9 +145,9 @@ impl Camera {
         let viewport_height = 2.0 * h * self.focus_distance;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
-        self.w = Vec3::unit_vector(&(self.eye - self.look_at));
-        self.u = Vec3::unit_vector(&Vec3::cross(&self.up, &self.w));
-        self.v = Vec3::cross(&self.w, &self.u);
+        self.w = Vec3::unit_vector(self.eye - self.look_at);
+        self.u = Vec3::unit_vector(Vec3::cross_two(self.up, self.w));
+        self.v = Vec3::cross(self.w, self.u);
 
         let viewport_u = viewport_width * self.u;
         let viewport_v = viewport_height * -self.v;
@@ -151,22 +169,22 @@ impl Camera {
         self.center + (p.x * self.defocus_disk_u) + (p.y * self.defocus_disk_v)
     }
 
-    fn ray_color(&self, r: &Ray, depth: u64, world: &HittableList) -> Color {
+    fn ray_color(&self, r: Ray, depth: u64, world: &HittableList) -> Color {
         // If we've exceeded the ray bounce limit, no more light is gathered
         if depth <= 0 { return Color::default(); }
 
         let mut rec = HitRecord::default();
 
-        if !world.hit(r, &Interval::new(0.0001, INFINITY), &mut rec) {
+        if !world.hit(r, Interval::new(0.0001, INFINITY), &mut rec) {
             return self.background;
-        } 
+        }
         let mut scattered = Ray::default();
         let mut attenuation = Color::default();
-        let color_from_emission = rec.material.emitted(rec.u, rec.v, &rec.point);
-        if !rec.material.scatter(r, &rec, &mut attenuation, &mut scattered) {
+        let color_from_emission = rec.material.map_or(Color::default(), |mat| mat.emitted(rec.u, rec.v, rec.point));
+        if !rec.material.map_or(false, |mat| mat.scatter(r, &rec, &mut attenuation, &mut scattered)) {
             return color_from_emission;
         }
-        let ray_color = self.ray_color(&scattered, depth - 1, world);
+        let ray_color = self.ray_color(scattered, depth - 1, world);
         let color_from_scatter = attenuation * ray_color;
         return color_from_emission + color_from_scatter;
     }

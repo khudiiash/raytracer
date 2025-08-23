@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::core::hittable::{Hittable, HitRecord};
 use crate::core::hittable_list::HittableList;
 use crate::core::material::Material;
@@ -16,15 +14,15 @@ pub struct Quad {
     pub normal: Vec3,
     pub d: f64,
     pub bbox: Aabb,
-    pub material: Arc<dyn Material + Send + Sync>,
+    pub material: &'static dyn Material,
 }
 
 impl Quad {
-    pub fn new(q: Point3, u: Vec3, v: Vec3, material: Arc<dyn Material + Send + Sync>) -> Self {
-        let n = Vec3::cross(&u, &v);
-        let normal = Vec3::unit_vector(&n);
-        let d = Vec3::dot(&normal, &q);
-        let w = n / Vec3::dot(&n, &n);
+    pub fn new(q: Point3, u: Vec3, v: Vec3, material: &'static dyn Material) -> Self {
+        let n = Vec3::cross_two(u, v);
+        let normal = Vec3::unit_vector(n);
+        let d = Vec3::dot_two(normal, q);
+        let w = n / Vec3::dot_two(n, n);
 
         // Compute the bounding box of all four vertices.
         let p0 = q;
@@ -61,8 +59,8 @@ impl Quad {
 }
 
 impl Hittable for Quad {
-    fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
-        let denom = Vec3::dot(&self.normal, &r.direction);
+    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool {
+        let denom = Vec3::dot_two(self.normal, r.direction);
 
         // No hit if the ray is parallel to the plane.
         if denom.abs() < 1e-8 {
@@ -70,7 +68,7 @@ impl Hittable for Quad {
         }
 
         // Compute intersection t
-        let t = (self.d - Vec3::dot(&self.normal, &r.origin)) / denom;
+        let t = (self.d - Vec3::dot_two(self.normal, r.origin)) / denom;
         if !interval.contains(t) {
             return false;
         }
@@ -78,8 +76,8 @@ impl Hittable for Quad {
         // Compute intersection point and check if inside quad
         let intersection = r.at(t);
         let planar_hitpt_vector = intersection - self.q;
-        let alpha = Vec3::dot(&self.w, &Vec3::cross(&planar_hitpt_vector, &self.v));
-        let beta = Vec3::dot(&self.w, &Vec3::cross(&self.u, &planar_hitpt_vector));
+        let alpha = Vec3::dot(self.w, Vec3::cross_two(planar_hitpt_vector, self.v));
+        let beta = Vec3::dot(self.w, Vec3::cross_two(self.u, planar_hitpt_vector));
 
         if !self.is_interior(alpha, beta, rec) {
             return false;
@@ -87,8 +85,8 @@ impl Hittable for Quad {
 
         rec.t = t;
         rec.point = intersection;
-        rec.material = self.material.clone();
-        rec.set_face_normal(r, &self.normal);
+        rec.material = Some(self.material);
+        rec.set_face_normal(r, self.normal);
 
         true
     }
@@ -98,20 +96,20 @@ impl Hittable for Quad {
     }
 }
 
-pub fn make_box(a: Point3, b: Point3, material: Arc<dyn Material + Send + Sync>) -> HittableList {
-    let min = Vec3::min(&a, &b);
-    let max = Vec3::max(&a, &b);
+pub fn make_box(a: Point3, b: Point3, material: &'static dyn Material) -> HittableList {
+    let min = Vec3::min(a, b);
+    let max = Vec3::max(a, b);
 
     let dx = Vec3::new(max.x - min.x, 0.0, 0.0);
     let dy = Vec3::new(0.0, max.y - min.y, 0.0);
     let dz = Vec3::new(0.0, 0.0, max.z - min.z);
 
     let mut sides= HittableList::new();
-    sides.add(Quad::new(Point3::new(min.x, min.y, max.z), dx, dy, material.clone())); // front
-    sides.add(Quad::new(Point3::new(max.x, min.y, max.z), -dz, dy, material.clone())); // right
-    sides.add(Quad::new(Point3::new(max.x, min.y, min.z), -dx, dy, material.clone())); // back
-    sides.add(Quad::new(Point3::new(min.x, min.y, min.z), dz, dy, material.clone())); // left
-    sides.add(Quad::new(Point3::new(min.x, max.y, max.z), dx, -dz, material.clone())); // top
-    sides.add(Quad::new(Point3::new(min.x, min.y, min.z), dx, dz, material.clone())); // bottom
+    sides.add(Quad::new(Point3::new(min.x, min.y, max.z), dx, dy, material)); // front
+    sides.add(Quad::new(Point3::new(max.x, min.y, max.z), -dz, dy, material)); // right
+    sides.add(Quad::new(Point3::new(max.x, min.y, min.z), -dx, dy, material)); // back
+    sides.add(Quad::new(Point3::new(min.x, min.y, min.z), dz, dy, material)); // left
+    sides.add(Quad::new(Point3::new(min.x, max.y, max.z), dx, -dz, material)); // top
+    sides.add(Quad::new(Point3::new(min.x, min.y, min.z), dx, dz, material)); // bottom
     sides
 }

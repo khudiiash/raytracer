@@ -4,9 +4,11 @@ use crate::math::ray::Ray;
 use crate::core::hittable::HitRecord;
 use crate::math::vec3::Vec3;
 
+#[derive(Debug, Copy)]
 pub struct Lambertian {
     pub albedo: Color,
 }
+
 
 impl Default for Lambertian {
     fn default() -> Self {
@@ -21,7 +23,7 @@ impl Clone for Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
+    fn scatter(&self, r_in: Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
         // Catch degerate scatter direction
         if scatter_direction.near_zero() {

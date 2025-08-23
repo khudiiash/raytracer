@@ -22,7 +22,7 @@ impl Ray {
     pub fn hit_sphere(&self, center: Point3, radius: f64) -> f64 {
         let oc = center - self.origin;
         let a = self.direction.length_squared();
-        let h = Vec3::dot(&self.direction, &oc);
+        let h = Vec3::dot_two(self.direction, oc);
         let c = oc.length_squared() - radius * radius;
         let discriminant = h * h - a * c;
 
@@ -33,13 +33,13 @@ impl Ray {
         }
     }
 
-    pub fn color(&self, world: &HittableList) -> Color {
+    pub fn color(self, world: &HittableList) -> Color {
         let mut rec = HitRecord::default();
-        if world.hit(self, &Interval::new(0.0, INFINITY), &mut rec) {
+        if world.hit(self, Interval::new(0.0, INFINITY), &mut rec) {
             return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
         }
         // Sky gradient
-        let unit_direction = Vec3::unit_vector(&self.direction);
+        let unit_direction = Vec3::unit_vector(self.direction);
         let a = 0.5 * (unit_direction.y + 1.0);
         (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
     }

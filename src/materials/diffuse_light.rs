@@ -9,12 +9,11 @@ pub struct DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color {
+    fn emitted(&self, u: f64, v: f64, p: Point3) -> Color {
         self.emit
     }
 
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
+    fn scatter(&self, r_in: Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
         false
     }
 }
-

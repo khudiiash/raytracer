@@ -60,7 +60,7 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode {
-    fn hit(&self, r: &Ray, ray_t: &Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         if !self.bbox.hit(r, ray_t.clone()) {
             return false;
         }
@@ -71,17 +71,17 @@ impl Hittable for BvhNode {
             normal: rec.normal,
             t: rec.t,
             front_face: rec.front_face,
-            material: rec.material.clone(),
+            material: rec.material,
             u: rec.u,
             v: rec.v,
         };
 
-        hit_left = self.left.hit(r, ray_t, &mut temp_rec);
+        hit_left = self.left.hit(r, ray_t.clone(), &mut temp_rec);
 
         let t_max = if hit_left { temp_rec.t } else { ray_t.max };
         let mut hit_right = false;
         let mut temp_rec_right = temp_rec.clone();
-        hit_right = self.right.hit(r, &Interval { min: ray_t.min, max: t_max }, &mut temp_rec_right);
+        hit_right = self.right.hit(r, Interval { min: ray_t.min, max: t_max }, &mut temp_rec_right);
 
         if hit_right {
             *rec = temp_rec_right;
@@ -120,4 +120,3 @@ fn box_y_compare(a: &Arc<dyn Hittable + Send + Sync>, b: &Arc<dyn Hittable + Sen
 fn box_z_compare(a: &Arc<dyn Hittable + Send + Sync>, b: &Arc<dyn Hittable + Send + Sync>) -> Ordering {
     box_compare(a, b, 2)
 }
-

@@ -5,9 +5,9 @@ use crate::sdf::sphere::Sphere;
 use crate::core::hittable_list::HittableList;
 use crate::core::camera::Camera;
 use crate::math::color::Color;
+use crate::core::material::Material;
 use std::fs::File;
 use std::io::BufWriter;
-use std::sync::Arc;
 
 const OUTPUT_FILE: &str = "renders/spheres.ppm";
 
@@ -19,8 +19,8 @@ pub fn spheres() {
     let mut world = HittableList::new();
 
     // Ground
-    let ground_material = Lambertian { albedo: Color::new(0.5, 0.5, 0.5) };
-    world.add(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, Arc::new(ground_material)));
+    let ground_material = Box::leak(Box::new(Lambertian { albedo: Color::new(0.5, 0.5, 0.5) }));
+    world.add(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, &*ground_material as &dyn Material));
 
     // Random small spheres
     for a in -11..11 {
@@ -36,32 +36,32 @@ pub fn spheres() {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Lambertian { albedo };
-                    world.add(Sphere::new(center, 0.2, Arc::new(sphere_material.clone())));
+                    let sphere_material = Box::leak(Box::new(Lambertian { albedo }));
+                    world.add(Sphere::new(center, 0.2, &*sphere_material as &dyn Material));
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = Color::random_range(0.5, 1.0);
                     let fuzz = random_range(0.0, 0.5);
-                    let sphere_material = Metal { albedo, fuzz };
-                    world.add(Sphere::new(center, 0.2, Arc::new(sphere_material.clone())));
+                    let sphere_material = Box::leak(Box::new(Metal { albedo, fuzz }));
+                    world.add(Sphere::new(center, 0.2, &*sphere_material as &dyn Material));
                 } else {
                     // glass
-                    let sphere_material = Dielectric { ref_idx: 1.5 };
-                    world.add(Sphere::new(center, 0.2, Arc::new(sphere_material.clone())));
+                    let sphere_material = Box::leak(Box::new(Dielectric { ref_idx: 1.5 }));
+                    world.add(Sphere::new(center, 0.2, &*sphere_material as &dyn Material));
                 }
             }
         }
     }
 
     // Three big spheres
-    let material1 = Dielectric { ref_idx: 1.5 };
-    world.add(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, Arc::new(material1)));
+    let material1 = Box::leak(Box::new(Dielectric { ref_idx: 1.5 }));
+    world.add(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, &*material1 as &dyn Material));
 
-    let material2 = Lambertian { albedo: Color::new(0.4, 0.2, 0.1) };
-    world.add(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, Arc::new(material2)));
+    let material2 = Box::leak(Box::new(Lambertian { albedo: Color::new(0.4, 0.2, 0.1) }));
+    world.add(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, &*material2 as &dyn Material));
 
-    let material3 = Metal { albedo: Color::new(0.7, 0.6, 0.5), fuzz: 0.0 };
-    world.add(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, Arc::new(material3)));
+    let material3 = Box::leak(Box::new(Metal { albedo: Color::new(0.7, 0.6, 0.5), fuzz: 0.0 }));
+    world.add(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, &*material3 as &dyn Material));
 
     // BVH
     let bvh_node = BvhNode::new_from_list(world.objects.clone());

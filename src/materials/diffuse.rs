@@ -9,7 +9,7 @@ pub struct Diffuse {
 }
 
 impl Material for Diffuse {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
+    fn scatter(&self, r_in: Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
         let scatter_direction = rec.normal + Vec3::random_unit_vector();
         *scattered = Ray { origin: rec.point, direction: scatter_direction };
         *attenuation = self.albedo.clone();

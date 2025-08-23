@@ -6,7 +6,6 @@ use std::sync::Arc;
 use crate::core::material::Material;
 use crate::materials::lambertian::Lambertian;
 use crate::math::aabb::Aabb;
-use crate::math::color::Color;
 use crate::math::interval::Interval;
 use crate::math::ray::Ray;
 use crate::math::vec3::{Point3, Vec3};
@@ -15,7 +14,7 @@ use crate::math::vec3::{Point3, Vec3};
 pub struct HitRecord {
     pub point: Point3,
     pub normal: Vec3,
-    pub material: Arc<dyn Material + Send + Sync>,
+    pub material: Option<&'static dyn Material>,
     pub t: f64,
     pub u: f64,
     pub v: f64,
@@ -24,10 +23,11 @@ pub struct HitRecord {
 
 impl Default for HitRecord {
     fn default() -> Self {
+
         HitRecord {
             point: Point3::default(),
             normal: Vec3::default(),
-            material: Arc::new(Lambertian { albedo: Color::default() }),
+            material: None,
             t: 0.0,
             u: 0.0,
             v: 0.0,
@@ -41,7 +41,7 @@ impl Clone for HitRecord {
         HitRecord {
             point: self.point,
             normal: self.normal,
-            material: self.material.clone(),
+            material: self.material,
             t: self.t,
             u: self.u,
             v: self.v,
@@ -53,22 +53,22 @@ impl Clone for HitRecord {
 impl HitRecord {
     /// Sets the normal and front_face fields based on the ray and outward normal.
     /// The outward normal is assumed to be unit length.
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
-        self.front_face = Vec3::dot(&r.direction, outward_normal) < 0.0;
-        self.normal = if self.front_face { *outward_normal } else { -*outward_normal };
+    pub fn set_face_normal(&mut self, r: Ray, outward_normal: Vec3) {
+        self.front_face = Vec3::dot_two(r.direction, outward_normal) < 0.0;
+        self.normal = if self.front_face { outward_normal } else { -outward_normal };
     }
 }
 
 /// Trait for objects that can be intersected by rays.
 pub trait Hittable: Send + Sync {
     /// Returns true if the ray hits the object within the interval, and fills rec with hit info.
-    fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool;
 
     /// Returns the axis-aligned bounding box of the object.
     fn bounding_box(&self) -> &Aabb;
 }
 
-pub struct Translate { 
+pub struct Translate {
     pub hittable: Arc<dyn Hittable + Send + Sync>,
     pub offset: Vec3,
     pub bbox: Aabb,
@@ -82,9 +82,9 @@ impl Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool {
         let offset_r = Ray { origin: r.origin - self.offset, direction: r.direction };
-        if !self.hittable.hit(&offset_r, interval, rec) {
+        if !self.hittable.hit(offset_r, interval, rec) {
             return false;
         }
         rec.point += self.offset;
@@ -140,7 +140,7 @@ impl RotateY {
 }
 
 impl Hittable for RotateY {
-    fn hit(&self, r: &Ray, interval: &Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool {
         // Transform the ray from world space to object space.
 
         let origin = Point3::new(
@@ -158,11 +158,11 @@ impl Hittable for RotateY {
         let rotated_r = Ray {
             origin,
             direction,
-            ..*r
+            ..r
         };
 
         // Determine whether an intersection exists in object space (and if so, where).
-        if !self.hittable.hit(&rotated_r, interval, rec) {
+        if !self.hittable.hit(rotated_r, interval, rec) {
             return false;
         }
 
