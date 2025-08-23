@@ -9,28 +9,37 @@ This project is an implementation of the classic ["Ray Tracing in One Weekend"](
 - Output in PPM image format
 - Designed for clarity and extensibility
 
-## Project Structure
-
-- `src/vec3.rs` – 3D vector math
-- `src/ray.rs` – Ray structure and utilities
-- `src/color.rs` – Color output helpers
-- `src/hittable.rs` – Hittable trait and hit record
-- `src/hittable_list.rs` – List of hittable objects
-- `src/sdf/` – Signed distance field shapes (starting with spheres)
-- `src/common.rs` – Shared constants and utility functions
-- `src/main.rs` – Program entry point
 
 ## Getting Started
 
 1. Install [Rust](https://www.rust-lang.org/tools/install)
-2. Build and run:
+2. Run a demo by specifying its name. For example, to run the Cornell Box demo:
    ```sh
-   cargo run --release
+   cargo run --release cornell_box
    ```
-3. The output image will be written to `output.ppm`.
+   Or to run the Spheres demo:
+   ```sh
+   cargo run --release spheres
+   ```
 
 ## Goals
 
 - Learn Rust by porting a well-known C++ raytracer
 - Write clean, idiomatic, and safe Rust code
 - Make it easy to extend with new features and shapes
+
+## Images
+
+Here are some example renders produced by this raytracer:
+
+- Cornell Box:
+
+  ![Cornell Box](./images/cornell_box.png)
+
+- Spheres:
+
+  ![Spheres](./images/spheres.png)
+
+## Running Demos
+
+Ensure you have built the project in release mode for optimal performance.
