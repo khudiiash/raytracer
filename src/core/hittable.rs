@@ -4,7 +4,6 @@
 use std::sync::Arc;
 
 use crate::core::material::Material;
-use crate::materials::lambertian::Lambertian;
 use crate::math::aabb::Aabb;
 use crate::math::interval::Interval;
 use crate::math::ray::Ray;

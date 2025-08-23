@@ -60,34 +60,16 @@ impl BvhNode {
 }
 
 impl Hittable for BvhNode {
-    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        if !self.bbox.hit(r, ray_t.clone()) {
+    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool {
+        if !self.bbox.hit(r, interval.clone()) {
             return false;
         }
 
-        let mut hit_left = false;
-        let mut temp_rec = HitRecord {
-            point: rec.point,
-            normal: rec.normal,
-            t: rec.t,
-            front_face: rec.front_face,
-            material: rec.material,
-            u: rec.u,
-            v: rec.v,
-        };
+        let hit_left = self.left.hit(r, interval.clone(), rec);
 
-        hit_left = self.left.hit(r, ray_t.clone(), &mut temp_rec);
-
-        let t_max = if hit_left { temp_rec.t } else { ray_t.max };
-        let mut hit_right = false;
-        let mut temp_rec_right = temp_rec.clone();
-        hit_right = self.right.hit(r, Interval { min: ray_t.min, max: t_max }, &mut temp_rec_right);
-
-        if hit_right {
-            *rec = temp_rec_right;
-        } else if hit_left {
-            *rec = temp_rec;
-        }
+        let t_max = if hit_left { rec.t } else { interval.max };
+        let new_interval = Interval { min: interval.min, max: t_max };
+        let hit_right = self.right.hit(r, new_interval, rec);
 
         hit_left || hit_right
     }

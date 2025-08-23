@@ -28,24 +28,21 @@ pub fn cornell_box() {
 
     // Materials
 
-    // Geometry
-    world.add(Quad::new(Point3::new(555.0, 0.0, 0.0), Vec3::new(0.0, 555.0, 0.0), Vec3::new(0.0, 0.0, 555.0), &red as &dyn Material));
-    world.add(Quad::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 555.0, 0.0), Vec3::new(0.0, 0.0, 555.0), &green as &dyn Material));
+    // Light
     world.add(Quad::new(
         Point3::new(343.0, 548.8, 227.0),
         Vec3::new(-130.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, 104.0),
         &light
     ));
-    world.add(Quad::new(
-        Point3::new(0.0, 0.0, 0.0),
-        Vec3::new(555.0, 0.0, 0.0),
-        Vec3::new(0.0, 0.0, 555.0),
-        &white,
-    ));
+    // Geometry
+    world.add(Quad::new(Point3::new(555.0, 0.0, 0.0), Vec3::new(0.0, 555.0, 0.0), Vec3::new(0.0, 0.0, 555.0), &red as &dyn Material));
+    world.add(Quad::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 555.0, 0.0), Vec3::new(0.0, 0.0, 555.0), &green as &dyn Material));
+    world.add(Quad::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(555.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 555.0), &white as &dyn Material));
     world.add(Quad::new(Point3::new(555.0, 555.0, 555.0), Vec3::new(-555.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -555.0), &white as &dyn Material));
-    world.add(Quad::new(Point3::new(0.0, 0.0, 555.0), Vec3::new(555.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -555.0), &white as &dyn Material));
+    world.add(Quad::new(Point3::new(0.0, 0.0, 555.0), Vec3::new(555.0, 0.0, 0.0), Vec3::new(0.0, 555.0, 0.0), &white as &dyn Material));
 
+    // Boxes
     let box1 = make_box(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 330.0, 165.0),
@@ -67,8 +64,8 @@ pub fn cornell_box() {
 
     // Camera settings
     camera.aspect_ratio = 1.0;
-    camera.image_width = 1200;
-    camera.samples_per_pixel = 2000;
+    camera.image_width = 600;
+    camera.samples_per_pixel = 1000;
     camera.background = Color::new(0.0, 0.0, 0.0);
 
     camera.vfov = 40.0;

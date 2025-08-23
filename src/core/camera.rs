@@ -129,7 +129,7 @@ impl Camera {
         let average_speed = total_samples as f64 / (total_time * 1000.0);
         pb.finish_with_message("Rendering complete!");
         println!("Total samples: {}, Total Time: {}, Average speed: {} samples/ms",
-            fmt_samples(total_samples), fmt_time(total_time), average_speed);
+            fmt_samples(total_samples), fmt_time(total_time), average_speed as u64);
         Ok(())
     }
 

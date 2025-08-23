@@ -45,8 +45,9 @@ pub fn fmt_samples(samples: u64) -> String {
     }
 }
 pub fn fmt_time(seconds: f64) -> String {
-    let hours = seconds / 3600.0;
-    let minutes = (seconds % 3600.0) / 60.0;
-    let secs = seconds % 60.0;
+    let total_seconds = seconds.round() as u64;
+    let hours = total_seconds / 3600;
+    let minutes = (total_seconds % 3600) / 60;
+    let secs = total_seconds % 60;
     format!("{:02}:{:02}:{:02}", hours, minutes, secs)
 }
